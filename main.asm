@@ -5,8 +5,9 @@ welcome2: .asciiz "# Valores permitidos: 0 - 99 #\n"
 string1: .asciiz "Introduce el tamaño del vector:"
 string2: .asciiz "Dime el valor "
 string3: .asciiz "Resultado: "
-string4: .asciiz "Error: Introduce un valor entre 0 y 99"
-tamaño: .byte 0
+string4: .asciiz "Error: Introduce un valor entre 1 y 99!\n"
+string5: .asciiz "Error: Introduce un valor entre 0 y 99!\n"
+tamaño: .byte 0x00
 min: 	.byte 0x00
 max:	.byte 0x63
 #cero: .byte 0x0A
@@ -36,10 +37,14 @@ vector:
 	li	$v0, 5			# leemos un entero introducido por teclado
 	syscall
 	
-	#blt 	$t0, $t1, errors saltar si el dato leido es menor que....
+	
 	
 	move 	$t1, $v0		# t1 tamaño, t0 cont
 	sb	$t1, tamaño
+	
+	lb	$t6, min		# cargamos 0 como valor minimo
+	ble 	$t1, $t6, error1 	# si el numero es <= 0 o >99 volvemos a pedir
+	
 	.data
 	#.align $t1
 	#.space tamaño
@@ -61,12 +66,16 @@ ask:
 	
 	move 	$t2, $v0
 	
+	blt 	$t2, $t6, error2 	# si el numero es negativo o >99 volvemos a pedir
+	
 	add $t3, $t3, $t2 #suma
+	
 	
 	sw $t2, 0($s0)
 	addi 	$s3, $s0, 4 		# siguiente palabra
 	
 	blt 	$t0, $t1, ask
+	
 	
 	#==================== MEDIA ARITMETICA =====================
 	
@@ -99,7 +108,13 @@ end:	li	$v0, 10			# Fin del programa#
 	syscall
 	
 	
-errors: la 	$a0, string4		# --- "Resultado media aritmetica"
+error1: la 	$a0, string4		# --- "Error: Introduce un valor entre 1 y 99"
 	li	$v0, 4
 	syscall
+	j vector
+	
+error2: la 	$a0, string5		# --- "Error: Introduce un valor entre 0 y 99"
+	li	$v0, 4
+	syscall
+	subi	$t0, $t0, 1 # cont++
 	j ask
