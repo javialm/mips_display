@@ -7,7 +7,7 @@ string2: .asciiz "Dime el valor "
 string3: .asciiz "Resultado media aritmetica: "
 string4: .asciiz "Error: Introduce un valor entre 1 y 99!\n"
 string5: .asciiz "Error: Introduce un valor entre 0 y 99!\n"
-string6: .asciiz "Vector!\n"
+string6: .asciiz "\nRaiz = "
 tamaño: .byte 0x00
 min: 	.byte 0x00
 max:	.byte 0x63
@@ -106,9 +106,18 @@ ask:
 	lb	$t0, min #reset cont
 pointer:
 	
+	la 	$a0, string6		# --- "Resultado media aritmetica"
+	li	$v0, 4
+	syscall
 	
-	lw	$a0, 0($s3)
-	#move 	$a0, $t0
+	lw	$a0, 0($s3)		# Cargamos la palabra i del vector que almacenamos en data
+	mult 	$a0, $a0			# Obtenemos su cuadrado
+	
+	mflo	$t4			# almacenamos el cuadrado en $t4
+	lb	$t3, min 		#reset suma
+	add 	$t3, $t3, $t4 		# suma
+	
+	move 	$a0, $t3
 	li	$v0, 1
 	syscall
 	
@@ -117,6 +126,8 @@ pointer:
 	blt 	$t0, $t1, pointer
 	##.....
 					# sqrt(valor[1]^2 + ... valor[i]^2)
+					
+	#t0 = cont, t3 = suma, t4 = cuadrado, t5 = media aritmetica
 	
 	#case0: bne $t5, 0, case1
 		#code...
