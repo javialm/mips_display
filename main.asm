@@ -4,9 +4,10 @@ welcome1: .asciiz "########## WELCOME ###########\n"
 welcome2: .asciiz "# Valores permitidos: 0 - 99 #\n"
 string1: .asciiz "Introduce el tamaño del vector:"
 string2: .asciiz "Dime el valor "
-string3: .asciiz "Resultado: "
+string3: .asciiz "Resultado media aritmetica: "
 string4: .asciiz "Error: Introduce un valor entre 1 y 99!\n"
 string5: .asciiz "Error: Introduce un valor entre 0 y 99!\n"
+string6: .asciiz "Vector!\n"
 tamaño: .byte 0x00
 min: 	.byte 0x00
 max:	.byte 0x63
@@ -17,7 +18,7 @@ max:	.byte 0x63
 	li $s0, 0xFFFF0010 # carga dirección base del displayderecho
 	li $s1, 0xFFFF0011 # carga dirección base del displayizquierdo
 	
-	li $s3, 0x100100c0
+	li $s3, 0x10010100
 	#========================= WELCOME =================================
 	la 	$a0, welcome1
 	li	$v0, 4
@@ -44,6 +45,8 @@ vector:
 	
 	lb	$t6, min		# cargamos 0 como valor minimo
 	ble 	$t1, $t6, error1 	# si el numero es <= 0 o >99 volvemos a pedir
+	lb	$t6, max		# cargamos 1 como valor maximo
+	bge 	$t1, $t6, error1 	
 	
 	.data
 	#.align $t1
@@ -66,13 +69,16 @@ ask:
 	
 	move 	$t2, $v0
 	
+	lb	$t6, min		# cargamos 0 como valor minimo
 	blt 	$t2, $t6, error2 	# si el numero es negativo o >99 volvemos a pedir
+	lb	$t6, max		# cargamos 99 como valor maximo
+	bge 	$t2, $t6, error2	
 	
-	add $t3, $t3, $t2 #suma
+	add 	$t3, $t3, $t2 		# suma
 	
 	
-	sw $t2, 0($s0)
-	addi 	$s3, $s0, 4 		# siguiente palabra
+	sw 	$t2, 0($s3)
+	addi 	$s3, $s3, 4 		# siguiente palabra
 	
 	blt 	$t0, $t1, ask
 	
@@ -90,9 +96,27 @@ ask:
 	la 	$a0, string3		# --- "Resultado media aritmetica"
 	li	$v0, 4
 	syscall
+	
 	move 	$a0, $t5
 	li	$v0, 1
 	syscall
+	
+	#Debemos retornar...
+	li $s3, 0x10010100
+	lb	$t0, min #reset cont
+pointer:
+	
+	
+	lw	$a0, 0($s3)
+	#move 	$a0, $t0
+	li	$v0, 1
+	syscall
+	
+	addi	$t0, $t0, 1 # cont++
+	addi 	$s3, $s3, 4 		# siguiente palabra
+	blt 	$t0, $t1, pointer
+	##.....
+					# sqrt(valor[1]^2 + ... valor[i]^2)
 	
 	#case0: bne $t5, 0, case1
 		#code...
