@@ -5,10 +5,10 @@
 
 .data
 welcome1: .asciiz "########## WELCOME ###########\n"
-welcome2: .asciiz "# Valores permitidos: 0 - 99 #\n"
+welcome2: .asciiz "# Valores permitidos: 0 - 99 #\n\n"
 string1: .asciiz "Introduce el tamaño del vector:"
 string2: .asciiz "Dime el valor "
-string3: .asciiz "Resultado media aritmetica: "
+string3: .asciiz "\nResultado media aritmetica: "
 string4: .asciiz "Error: Introduce un valor entre 1 y 99!\n"
 string5: .asciiz "Error: Introduce un valor entre 0 y 99!\n"
 string6: .asciiz "\nCuadrado = "
@@ -28,6 +28,8 @@ seis:	.byte 0x7D
 siet:	.byte 0x07
 ocho:	.byte 0x7F
 nuev:	.byte 0x6F
+e:	.byte 0x79
+r:	.byte 0x50 # 
 #cero: .byte 0x0A
 #vector: .word
 .align 4
@@ -37,6 +39,11 @@ vector_dir:  .word
 	#========================= DIRECCIONES =============================
 	li 	$s0, 0xFFFF0010 # carga dirección base del display derecho
 	li 	$s1, 0xFFFF0011 # carga dirección base del display izquierdo
+	
+	la  $t2, min			# reset displays
+	lb  $t2, 0($t2)
+	sb $t2, 0($s0) 
+	sb $t2, 0($s1) 
 	
 	#li 	$s4, 0x10010100 #direccion estatica para los numeros para el display
 	la 	$s4, cero 	#direccion dinamica para los numeros para el display
@@ -56,6 +63,7 @@ vector_dir:  .word
 	#========================= TAMAÑO DEL VECTOR =========================
 	# Completar el vector con valores por teclado, TIENEN QUE SER NUMEROS
 vector:
+	
 	la 	$a0, string1		# --- "Introduce el tamaño del vector:"
 	li	$v0, 4
 	syscall
@@ -73,10 +81,12 @@ vector:
 	lb	$t6, max		# cargamos 1 como valor maximo
 	bge 	$t1, $t6, error1 	
 	
-	.data
-	#.align $t1
-	#.space tamaño
-	.text
+	
+	la  $t2, min			# reset displays
+	lb  $t2, 0($t2)
+	sb $t2, 0($s0) 
+	sb $t2, 0($s1) 
+	
 	
 	#=================== LECTURA VALORES VECTOR ================
 ask:	
@@ -97,17 +107,24 @@ ask:
 	lb	$t6, min		# cargamos 0 como valor minimo
 	blt 	$t2, $t6, error2 	# si el numero es negativo o >99 volvemos a pedir
 	lb	$t6, max		# cargamos 99 como valor maximo
-	bge 	$t2, $t6, error2	
+	bge 	$t2, $t6, error2
 	
-	add 	$t3, $t3, $t2 		# suma
+	
+	
+	add 	$t3, $t3, $t2 		# suma de los comp del vector
 	
 	
 	sw 	$t2, 0($s3)
 	addi 	$s3, $s3, 4 		# siguiente palabra
 	
+	la  $t2, min			# reset displays
+	lb  $t2, 0($t2)
+	sb $t2, 0($s0) 
+	sb $t2, 0($s1) 
+	
 	blt 	$t0, $t1, ask
 	
-	
+
 	#==================== MEDIA ARITMETICA =====================
 	
 	div $t3, $t1 #media aritmetica
@@ -171,14 +188,13 @@ sqrt:
 	li	$v0, 4
 	syscall
 	
-	move 	$a0, $t0  		#mostrar la rais
+	move 	$a0, $t0  		# mostrar la rais
 	li	$v0, 1
 	syscall
 	
 	
-	move 	$s5, $t0
+	move 	$s5, $t0		# guardamos raiz en s5
 	
-	#subi	$t0, $t0, 1 # cont--
 	
 	#t0 = cont, $t1 = tamanho $t2 = aux, t3 = suma, t4 = cuadrado, t5 = media aritmetica
 	#s0 = ??, $s5 = rais?
@@ -186,8 +202,13 @@ sqrt:
 #======================================================================================
 #				DISPLAYS
 #======================================================================================
+	#mostrar media aritmetica
+	#...
 	
-	div $t2, $s5, 10
+	#pedir caracter para continuar
+	#...
+	
+	div $t2, $s5, 10 # dividimos el numero de la raiz x 10 para obtener
 	
 	mfhi $t2
 	add $t2, $s4, $t2 # sumamos la unidad a la direccion de memoria.
@@ -199,18 +220,7 @@ sqrt:
 	lb $t2, 0($t2)
 	sb $t2, 0($s1) # almacena en dirección del displayderecho el valor de $t1
 
-	#sw 0x3F, 0($s4)
-	#0x3F
-	#0x06
-	#0x5B
-	#0x4F
-	#0x66
-	#0x6D
-	#0x7D
-	#0x07
-	#0x7F
-	#0x6F
-	
+
 	
 end:	li	$v0, 10			# Fin del programa#
 	syscall
@@ -222,10 +232,25 @@ end:	li	$v0, 10			# Fin del programa#
 error1: la 	$a0, string4		# --- "Error: Introduce un valor entre 1 y 99"
 	li	$v0, 4
 	syscall
+	
+	la  $t2, r			# Display Er
+	lb  $t2, 0($t2)
+	sb $t2, 0($s0)
+	la  $t2, e
+	lb  $t2, 0($t2)
+	sb $t2, 0($s1)
 	j vector
 	
 error2: la 	$a0, string5		# --- "Error: Introduce un valor entre 0 y 99"
 	li	$v0, 4
 	syscall
 	subi	$t0, $t0, 1 # cont--
+	
+	la  $t2, r			# Display Er
+	lb  $t2, 0($t2)
+	sb $t2, 0($s0)
+	la  $t2, e
+	lb  $t2, 0($t2)
+	sb $t2, 0($s1)
 	j ask
+	
