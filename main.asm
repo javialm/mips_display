@@ -13,7 +13,10 @@ string4: .asciiz "Error: Introduce un valor entre 1 y 99!\n"
 string5: .asciiz "Error: Introduce un valor entre 0 y 99!\n"
 string6: .asciiz "\nCuadrado = "
 string7: .asciiz "\nRaiz = "
+string8: .asciiz "\n--------FIN DE LA EJECUCION-------= "
+string9: .asciiz "\nPulse una tecla para continuar."
 tamaño: .byte 0x00
+one:	.byte 0x01
 min: 	.byte 0x00
 max:	.byte 0x63
 
@@ -197,16 +200,65 @@ sqrt:
 	
 	
 	#t0 = cont, $t1 = tamanho $t2 = aux, t3 = suma, t4 = cuadrado, t5 = media aritmetica
-	#s0 = ??, $s5 = rais?
+	#s0 = ??, $s5 = rais?, s6 factorial
+	
+	#========================= FACTORIAL =================================
+	# 
+	lb $t7, one
+	move $t2, $t1 #load size vector
+	move $t0, $t1 #load size vector
+	#subi $t0, $t2, 1
+	#subi $t2, $t2, 1
+	#mult $t1, $t2
+	#mflo $t0
+factor:
+	subi $t2, $t2, 1
+	mult $t2, $t0
+	mflo $t0
+	
+	
+	blt $t7, $t2, factor
+	move $s7, $t0
 
 #======================================================================================
 #				DISPLAYS
 #======================================================================================
+	#pedir caracter para continuar
+	#...
+	la 	$a0, string9		# --- "Pulsa una tecla..."
+	li	$v0, 4
+	syscall
+	
+	move 	$a0, $t0
+	li	$v0, 12
+	syscall
+	
 	#mostrar media aritmetica
 	#...
 	
+	div $t2, $t5, 10 # dividimos el numero de la raiz x 10 para obtener
+	
+	mfhi $t2
+	add $t2, $s4, $t2 # sumamos la unidad a la direccion de memoria.
+	lb $t2, 0($t2)
+	sb $t2, 0($s0) # almacena en dirección del displayderecho el valor de $t1
+	
+	mflo $t2
+	add $t2, $s4, $t2 # sumamos la unidad a la direccion de memoria.
+	lb $t2, 0($t2)
+	sb $t2, 0($s1) # almacena en dirección del displayderecho el valor de $t1
+	
 	#pedir caracter para continuar
 	#...
+	la 	$a0, string9		# --- "Pulsa una tecla..."
+	li	$v0, 4
+	syscall
+	
+	move 	$a0, $t0
+	li	$v0, 12
+	syscall
+	
+	#Mostrar distancia euclidea
 	
 	div $t2, $s5, 10 # dividimos el numero de la raiz x 10 para obtener
 	
@@ -219,7 +271,10 @@ sqrt:
 	add $t2, $s4, $t2 # sumamos la unidad a la direccion de memoria.
 	lb $t2, 0($t2)
 	sb $t2, 0($s1) # almacena en dirección del displayderecho el valor de $t1
-
+	
+	la 	$a0, string8		# --- "FIN"
+	li	$v0, 4
+	syscall
 
 	
 end:	li	$v0, 10			# Fin del programa#
