@@ -12,7 +12,7 @@ string2: .asciiz "Dime el valor "
 string3: .asciiz "\n--Media aritmetica: "
 string4: .asciiz "Error: Introduce un valor entre 1 y 99!\n"
 string5: .asciiz "Error: Introduce un valor entre 0 y 99!\n"
-string6: .asciiz "\nPulse una tecla para continuar... "
+string6: .asciiz "\n\nPulse una tecla para continuar... "
 string7: .asciiz "\n--Distancia euclidea: "
 string8: .asciiz "\n--Factorial: "
 string9: .asciiz "\n--------FIN DE LA EJECUCION-------= "
@@ -158,6 +158,13 @@ pointer:
 	#ir multiplicando numero x el mismo numero. Si da el numero que evaluamos, y la siguiente es mayor, esa es la raiz.
 	# sqrt(valor[1]^2 + ... valor[i]^2)
 	
+	#f0 n
+	#f2 cont
+	#f4 b
+	#f6 0.5
+	#f8 0
+	#f10 
+	
 	lb	$t0, min 		#reset suma		
 sqrt:	
 	addi	$t0, $t0, 1 		# cont++
@@ -167,6 +174,11 @@ sqrt:
 	
 	blt 	$t2, $t3 sqrt
 	
+	
+	bgt 	$t3,$t2, end_sqrt	# si 50 > 64
+	subi	$t0, $t0, 1 		# cont--
+	end_sqrt:
+
 	move 	$s5, $t0		# guardamos raiz en s5
 	sb	$t0, dist		# Almacenamos la distancia euclidea en memoria
 	
@@ -270,19 +282,19 @@ factor:
 	
 	lh	$t2, fact
 	
-	div 	$t2, $t2, 10 		# dividimos el numero de la raiz x 10 para obtener
+	div 	$t2, $t2, 10 		# dividimos el numero entre 10
 	
 	mfhi 	$t2
 	add 	$t2, $s4, $t2 		# sumamos la unidad a la direccion de memoria.
 	lb 	$t2, 0($t2)
-	sb 	$t2, 0($s0) 		# almacena en dirección del displayderecho el valor de $t1
+	sb 	$t2, 0($s0) 		# almacena en dirección del displayderecho el valor
 	
 	mflo 	$t2
-	add 	$t2, $s4, $t2 		# sumamos la unidad a la direccion de memoria.
+	add 	$t2, $s4, $t2 		# sumamos la decena a la direccion de memoria.
 	lb 	$t2, 0($t2)
-	sb 	$t2, 0($s1) 		# almacena en dirección del displayderecho el valor de $t1
+	sb 	$t2, 0($s1) 		# almacena en dirección del displayderecho el valor
 	
-	la 	$a0, string8		# --- "Factorial"
+	la 	$a0, string8		# --- "Factorial:"
 	li	$v0, 4
 	syscall
 	
