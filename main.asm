@@ -115,7 +115,7 @@ ask:
 	lb	$t6, max		# cargamos 99 como valor maximo
 	bge 	$t2, $t6, error2	# si el numero >99 repetir
 	
-	add 	$t3, $t3, $t2 		# suma de los comp del vector
+	add 	$t3, $t3, $t2 		# suma de los componentes del vector
 	
 	sw 	$t2, 0($s3)
 	addi 	$s3, $s3, 4 		# siguiente palabra
@@ -142,28 +142,21 @@ ask:
 	
 pointer:
 	
-	lw	$a0, 0($s3)		# Cargamos la palabra i del vector que almacenamos en data
+	lw	$a0, 0($s3)		# Cargamos el elemento i del vector que almacenamos en data
 	mult 	$a0, $a0		# Obtenemos su cuadrado
 	
 	mflo	$t4			# almacenamos el cuadrado en $t4
 	
-	add 	$t3, $t3, $t4 		# suma
+	add 	$t3, $t3, $t4 		# suma de cuadrados
 	
 	addi	$t0, $t0, 1 		# cont++
 	addi 	$s3, $s3, 4 		# siguiente palabra
-	blt 	$t0, $t1, pointer
+	blt 	$t0, $t1, pointer	# Si quedan elementos por recorrer --> pointer
 
 
 	#========================= RAIZ =================================
 	#ir multiplicando numero x el mismo numero. Si da el numero que evaluamos, y la siguiente es mayor, esa es la raiz.
 	# sqrt(valor[1]^2 + ... valor[i]^2)
-	
-	#f0 n
-	#f2 cont
-	#f4 b
-	#f6 0.5
-	#f8 0
-	#f10 
 	
 	lb	$t0, min 		#reset suma		
 sqrt:	
@@ -173,7 +166,6 @@ sqrt:
 	mflo 	$t2
 	
 	blt 	$t2, $t3 sqrt
-	
 	
 	bgt 	$t3,$t2, end_sqrt	# si 50 > 64
 	subi	$t0, $t0, 1 		# cont--
@@ -188,8 +180,8 @@ sqrt:
 	#========================= FACTORIAL =================================
 	
 	lb 	$t7, one
-	move 	$t2, $t1 		#load size vector
-	move 	$t0, $t1		#load size vector
+	move 	$t2, $t1 		# cargar tamaño del vector
+	move 	$t0, $t1		# cargar tamaño del vector
 factor:
 	subi 	$t2, $t2, 1
 	mult 	$t2, $t0
@@ -197,35 +189,35 @@ factor:
 	
 	blt 	$t7, $t2, factor
 	move 	$s7, $t0
-	sh	$t0, fact		# Almacenamos la distancia euclidea en memoria
+	sh	$t0, fact		# Almacenamos el factorial en memoria
 
 #======================================================================================
 #				DISPLAYS
 #======================================================================================
+
 	#pedir caracter para continuar
 	#...
 	la 	$a0, string6		# --- "Pulsa una tecla..."
 	li	$v0, 4
 	syscall
-	
-	move 	$a0, $t0
+			
 	li	$v0, 12
 	syscall
 	
 	#mostrar media aritmetica
 	#...
 	
-	div 	$t2, $t5, 10 		# dividimos el numero de la raiz x 10 para obtener
+	div 	$t2, $t5, 10 		# dividimos la raiz entre 10
 	
 	mfhi 	$t2
 	add 	$t2, $s4, $t2 		# sumamos la unidad a la direccion de memoria.
 	lb 	$t2, 0($t2)
-	sb 	$t2, 0($s0) 		# almacena en dirección del displayderecho el valor de $t1
+	sb 	$t2, 0($s0) 		# almacena en dirección del display derecho el valor
 	
 	mflo 	$t2
-	add 	$t2, $s4, $t2 		# sumamos la unidad a la direccion de memoria.
+	add 	$t2, $s4, $t2 		# sumamos la decena a la direccion de memoria.
 	lb 	$t2, 0($t2)
-	sb 	$t2, 0($s1) 		# almacena en dirección del displayderecho el valor de $t1
+	sb 	$t2, 0($s1) 		# almacena en dirección del displayderecho el valor
 	
 	la 	$a0, string3		# --- "Resultado media aritmetica"
 	li	$v0, 4
@@ -241,30 +233,29 @@ factor:
 	li	$v0, 4
 	syscall
 	
-	lb	$a0, media
 	li	$v0, 12
 	syscall
 	
 	#Mostrar distancia euclidea
 	
-	div 	$t2, $s5, 10 		# dividimos el numero de la raiz x 10 para obtener
+	div 	$t2, $s5, 10 		# dividimos la raiz entre 10
 	
 	mfhi 	$t2
 	add 	$t2, $s4, $t2 		# sumamos la unidad a la direccion de memoria.
 	lb 	$t2, 0($t2)
-	sb 	$t2, 0($s0) 		# almacena en dirección del displayderecho el valor de $t1
+	sb 	$t2, 0($s0) 		# almacena en dirección del displayderecho el valor
 	
 	mflo 	$t2
-	add 	$t2, $s4, $t2 		# sumamos la unidad a la direccion de memoria.
+	add 	$t2, $s4, $t2 		# sumamos la decena a la direccion de memoria.
 	lb 	$t2, 0($t2)
-	sb 	$t2, 0($s1) 		# almacena en dirección del displayderecho el valor de $t1
+	sb 	$t2, 0($s1) 		# almacena en dirección del displayderecho el valor
 	
 	la 	$a0, string7		# --- " Distancia euclidea"
 	li	$v0, 4
 	syscall
 	
 	lb	$t0, dist
-	move 	$a0, $t0  		# mostrar la rais
+	move 	$a0, $t0  		# mostrar la raiz
 	li	$v0, 1
 	syscall
 	
@@ -274,7 +265,6 @@ factor:
 	li	$v0, 4
 	syscall
 	
-	lb	$a0, dist
 	li	$v0, 12
 	syscall
 	
