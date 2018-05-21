@@ -1,8 +1,3 @@
-# Pedir por teclado el tamaño del vector
-
-#la media aritmetica se muestra por consola, pero ademas mostrar la distancia euclidea.
-#Para ello indicaremos pulse una tecla, y cuando lees un char, si pulsas una tecla salta. No hace falta imprimir la tecla.
-
 .data
 
 welcome1: .asciiz "########## WELCOME ###########\n"
@@ -15,7 +10,8 @@ string5: .asciiz "Error: Introduce un valor entre 0 y 99!\n"
 string6: .asciiz "\n\nPulse una tecla para continuar... "
 string7: .asciiz "\n--Distancia euclidea: "
 string8: .asciiz "\n--Factorial: "
-string9: .asciiz "\n--------FIN DE LA EJECUCION-------= "
+string9: .asciiz "\n No se puede representar un valor > 99 "
+string10: .asciiz ": "
 
 .space 4
 			
@@ -48,6 +44,8 @@ vector_dir:  .word		# Dirección dinámica del vector.
 #======================================================================================
 #				MAIN
 #======================================================================================
+	#t0 = cont, $t1 = tamanho $t2 = aux, t3 = suma, t4 = cuadrado, t5 = media aritmetica
+	#s0 = ??, $s5 = rais?, s6 factorial
 .text
 	#========================= DIRECCIONES =============================
 	li 	$s0, 0xFFFF0010 	# carga dirección base del display derecho
@@ -105,6 +103,10 @@ ask:
 	li	$v0, 1
 	syscall
 	
+	la 	$a0, string10
+	li	$v0, 4
+	syscall
+	
 	li	$v0, 5			# leemos un entero introducido por teclado
 	syscall
 	
@@ -128,6 +130,14 @@ ask:
 	blt 	$t0, $t1, ask	
 
 	#==================== MEDIA ARITMETICA =====================
+	
+	mtc1 $t3, $f0
+  	cvt.s.w $f12, $f12
+  	
+  	mtc1 $t1, $f2
+  	cvt.s.w $f12, $f12
+  	
+  	div.s $f4, $f0, $f2
 	
 	div 	$t3, $t1 		# dividir suma de los componentes / num elementos
 	mflo 	$t5
@@ -174,8 +184,6 @@ sqrt:
 	move 	$s5, $t0		# guardamos raiz en s5
 	sb	$t0, dist		# Almacenamos la distancia euclidea en memoria
 	
-	#t0 = cont, $t1 = tamanho $t2 = aux, t3 = suma, t4 = cuadrado, t5 = media aritmetica
-	#s0 = ??, $s5 = rais?, s6 factorial
 	
 	#========================= FACTORIAL =================================
 	
@@ -223,9 +231,13 @@ factor:
 	li	$v0, 4
 	syscall
 	
-	move 	$a0, $t5
-	li	$v0, 1
-	syscall
+	#move 	$a0, $t5
+	#li	$v0, 1
+	#syscall
+			#Mostrar en simple precision en vez de entero
+	li $v0, 2
+  	mov.s $f12, $f4   # Move  $f4 to  $f12
+  	syscall
 	
 	#pedir caracter para continuar
 	#...
@@ -270,7 +282,18 @@ factor:
 	
 	#Mostrar factorial
 	
-	lh	$t2, fact
+	lh	$t2, fact		# cargamos la variable factorial
+	lb	$t0, max		# cargamos el valor máximo
+	
+	la 	$a0, string8		# --- "Factorial:"
+	li	$v0, 4
+	syscall
+	
+	lh	$a0, fact
+	li	$v0, 1
+	syscall
+	
+	bgt	$t2, $t0, error3	# si el valor es > 99 no se puede representar
 	
 	div 	$t2, $t2, 10 		# dividimos el numero entre 10
 	
@@ -284,13 +307,7 @@ factor:
 	lb 	$t2, 0($t2)
 	sb 	$t2, 0($s1) 		# almacena en dirección del displayderecho el valor
 	
-	la 	$a0, string8		# --- "Factorial:"
-	li	$v0, 4
-	syscall
 	
-	lh	$a0, fact
-	li	$v0, 1
-	syscall
 	
 end:	li	$v0, 10			# Fin del programa#
 	syscall
@@ -323,4 +340,17 @@ error2: la 	$a0, string5		# --- "Error: Introduce un valor entre 0 y 99"
 	lb  	$t2, 0($t2)
 	sb 	$t2, 0($s1)
 	j ask
+	
+error3: la 	$a0, string9		# --- "Error: Introduce un valor entre 0 y 99"
+	li	$v0, 4
+	syscall
+	subi	$t0, $t0, 1 		# cont--
+	
+	la  	$t2, r			# Display Er
+	lb  	$t2, 0($t2)
+	sb 	$t2, 0($s0)
+	la  	$t2, e
+	lb  	$t2, 0($t2)
+	sb 	$t2, 0($s1)
+	j end
 	
